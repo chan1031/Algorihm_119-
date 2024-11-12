@@ -16,7 +16,7 @@
         <!-- Google Maps API Key 설정 -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyB7qD92x-JcppamWaz2Tv0Z5ungbRQzcks" />
+            android:value="APIKEY" />
 
         <!-- MapsActivity를 런처 액티비티로 설정 -->
         <activity
