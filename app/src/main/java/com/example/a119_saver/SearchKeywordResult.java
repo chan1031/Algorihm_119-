@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 // 검색 결과 데이터 클래스
-public class SearchResult {
+public class SearchKeywordResult {
     @SerializedName("documents")
     private List<Place> places;
 
