@@ -23,6 +23,7 @@
     import com.kakao.vectormap.route.RouteLine;
     import com.kakao.vectormap.route.RouteLineLayer;
     import com.kakao.vectormap.route.RouteLineOptions;
+    import com.kakao.vectormap.route.RouteLinePattern;
     import com.kakao.vectormap.route.RouteLineSegment;
     import com.kakao.vectormap.route.RouteLineStyle;
     import com.kakao.vectormap.route.RouteLineStyles;
@@ -57,6 +58,7 @@
         private static final String TAG = "TEST";
         //카카오 네비게이션
         private KakaoNavigation kakaoNavigation;
+
         //hospital class
         public class Hospital {
             String hospital_name;
@@ -408,23 +410,19 @@
                 // 1. RouteLineLayer 가져오기
                 RouteLineLayer layer = kakaoMap.getRouteLineManager().getLayer();
 
-                // 2. RouteLineStylesSet 생성하기 (파란색 경로 스타일)
-                RouteLineStylesSet stylesSet = RouteLineStylesSet.from("blueStyles",
-                        RouteLineStyles.from(RouteLineStyle.from(16, Color.BLUE)));
-
-
-                // 3. Vertex 리스트를 LatLng 리스트로 변환
+                // 2. Vertex 리스트를 LatLng 리스트로 변환
                 List<LatLng> routeCoords = vertices.stream()
                         .map(vertex -> LatLng.from(vertex.lat, vertex.lon))
                         .collect(Collectors.toList());
 
-                // 4. RouteLineSegment 생성 및 스타일 설정
-                RouteLineSegment segment = RouteLineSegment.from(routeCoords)
-                        .setStyles(stylesSet.getStyles("navigationRoute"));
+                // 3. RouteLineStyle 생성
+                RouteLineStyle style = RouteLineStyle.from(16, Color.BLUE);
 
-                // 5. RouteLineOptions 생성
-                RouteLineOptions options = RouteLineOptions.from(segment)
-                        .setStylesSet(stylesSet);
+                // 4. RouteLineSegment 생성
+                RouteLineSegment segment = RouteLineSegment.from(routeCoords, style);
+
+                // 5. RouteLineOptions 생성 및 경로 추가
+                RouteLineOptions options = RouteLineOptions.from(Arrays.asList(segment));
 
                 // 6. RouteLine 생성 및 추가
                 RouteLine routeLine = layer.addRouteLine(options);
