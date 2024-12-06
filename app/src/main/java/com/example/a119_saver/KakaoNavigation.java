@@ -3,8 +3,10 @@ package com.example.a119_saver;
 import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.OkHttpClient;
@@ -19,12 +21,26 @@ import retrofit2.http.Query;
 
 public class KakaoNavigation {
     private static final String TAG = "KakaoNavigation";
-    private static final String TAG2 = "Graph";
+    private static final String TAG2 = "branchandbound";
     private static final String BASE_URL = "https://apis-navi.kakaomobility.com/";
     private static final String API_KEY = "cb49ad3e6bf961d966a056458a106ea9";
     private final NaviApi naviApi;
     private final double CURRENT_LAT = 37.5873;
     private final double CURRENT_LON = 126.9930;
+
+    public class Result {
+        List<String> path;
+        int totalTime;
+
+        public Result(List<String> path, int totalTime) {
+            this.path = new ArrayList<>(path);  // path를 복사하도록 수정
+            this.totalTime = totalTime;
+        }
+    }
+
+    private Result bestResult;
+    //이 변수는 사용자로부터 입력받아야 하므로 MainActivity.java에서 가져와야할듯
+    private int goldenTime;
 
     //Graph
     private Graph graph;
@@ -32,11 +48,36 @@ public class KakaoNavigation {
     public Graph getGraph() {
         return graph;
     }
+
+    private List<Vertex> best_vertex = new ArrayList<>();
+
     //vertex 조회 메서드
     public List<Vertex> getRouteVertices(String from, String to) {
         if (graph == null) return null;
         return graph.getVertexPath(from, to);
     }
+
+    public List<Vertex> getBestPathVertices(Result bestResult) {
+        best_vertex.clear();  // 기존 데이터 초기화
+
+        // bestResult의 경로를 순회하면서 연속된 두 지점 간의 vertex들을 모두 저장
+        for (int i = 0; i < bestResult.path.size() - 1; i++) {
+            String from = bestResult.path.get(i);
+            String to = bestResult.path.get(i + 1);
+
+            List<Vertex> vertices = getRouteVertices(from, to);
+            if (vertices != null) {
+                best_vertex.addAll(vertices);
+                Log.d(TAG, String.format("Adding navigation route from %s to %s", from, to));
+                Log.d(TAG, String.format("Added %d vertices", vertices.size()));
+            }
+        }
+
+        Log.d(TAG, String.format("Total vertices in best path: %d", best_vertex.size()));
+        return best_vertex;
+    }
+
+
 
     public void printGraphState() {
         // 노드별 정보 출력
@@ -122,7 +163,7 @@ public class KakaoNavigation {
 
     // 모든 노드 간 경로 계산을 위한 콜백
     public interface AllRoutesCallback {
-        void onSuccess(List<RouteInfo> routes);
+        void onSuccess(List<RouteInfo> routes,Result bestPath);
         void onError(String message);
     }
 
@@ -130,7 +171,7 @@ public class KakaoNavigation {
         graph = new Graph();
         List<RouteInfo> allRoutes = new ArrayList<>();
         // 현재 위치 노드 추가 (hvec 없음)
-        graph.addNode("현재 위치", CURRENT_LAT, CURRENT_LON,99999);
+        graph.addNode("현재 위치" ,CURRENT_LAT, CURRENT_LON,99999);
 
         for (MainActivity.Hospital hospital : hospitals) {
             graph.addNode(
@@ -226,11 +267,29 @@ public class KakaoNavigation {
                                 if (completedRequests.incrementAndGet() == totalRequests.get()) {
                                     Log.d(TAG, "All routes calculated. Calling callback...");
                                     printGraphState();
-                                    callback.onSuccess(allRoutes);
+                                    //최선의 경로
+                                    Result result = branch_and_bound(60);  // 예시로 골든타임 30분 설정
+                                    if (result != null) {
+                                        Log.d(TAG2, "최선의 경로:");
+                                        StringBuilder pathStr = new StringBuilder();
+                                        for (int i = 0; i < result.path.size(); i++) {
+                                            pathStr.append(result.path.get(i));
+                                            if (i < result.path.size() - 1) {
+                                                pathStr.append(" -> ");
+                                            }
+                                        }
+                                        Log.d(TAG2, pathStr.toString());
+                                        Log.d(TAG2, String.format("총 소요 시간: %d분 %d초",
+                                                result.totalTime / 60, result.totalTime % 60));
+                                    } else {
+                                        Log.d(TAG2, "가능한 경로를 찾을 수 없습니다.");
+                                    }
+                                    callback.onSuccess(allRoutes, result);
                                 }
                             }
                         }
                     }
+
                     @Override
                     public void onFailure(Call<DirectionsResponse> call, Throwable t) {
                         Log.e(TAG, "API call failed", t);
@@ -242,7 +301,6 @@ public class KakaoNavigation {
             }
         }
     }
-
 
     // Request/Response 클래스들
     private static class DirectionsRequest {
@@ -275,7 +333,6 @@ public class KakaoNavigation {
         }
     }
 
-
     private static class Route {
         @SerializedName("summary")
         Summary summary;
@@ -294,6 +351,8 @@ public class KakaoNavigation {
         }
     }
 
+
+
     private static class Summary {
         @SerializedName("distance")
         int distance;
@@ -310,6 +369,62 @@ public class KakaoNavigation {
             this.name = name;
             this.lat = lat;
             this.lon = lon;
+        }
+    }
+
+    public Result branch_and_bound(int golden_time) {
+        if (graph == null) return null;
+
+        this.goldenTime = golden_time;
+        this.bestResult = null;
+
+        List<String> currentPath = new ArrayList<>();
+        currentPath.add("현재 위치");    // 시작점
+
+        Set<String> visited = new HashSet<>();
+        visited.add("현재 위치");        // 시작점 방문 체크
+
+        branch_and_bound_recursive(currentPath, visited, 0);
+
+        return bestResult;
+    }
+
+    //branch and bound 적용 함수
+    private void branch_and_bound_recursive(List<String> currentPath, Set<String> visited, int currentTime) {
+        // 모든 노드를 방문한 경우
+        if (visited.size() == graph.getNodes().size()) {
+            if (bestResult == null || currentTime < bestResult.totalTime) {
+                bestResult = new Result(currentPath, currentTime);
+            }
+            return;
+        }
+
+        String currentNode = currentPath.get(currentPath.size() - 1);
+
+        // 다음 방문할 노드 탐색
+        for (String nextNode : graph.getNodes().keySet()) {
+            if (visited.contains(nextNode)) continue;
+
+            // 다음 노드까지의 이동시간 계산
+            int moveTime = graph.getAdjacencyMap().get(currentNode).get(nextNode);
+            int nextTotalTime = currentTime + moveTime;
+
+            // 가지치기 (Pruning)
+            if (nextTotalTime > goldenTime * 60 ||
+                    (bestResult != null && nextTotalTime >= bestResult.totalTime)) {
+                continue;
+            }
+
+            // 경로 확장
+            currentPath.add(nextNode);
+            visited.add(nextNode);
+
+            // 재귀적으로 탐색 진행
+            branch_and_bound_recursive(currentPath, visited, nextTotalTime);
+
+            // 백트래킹
+            currentPath.remove(currentPath.size() - 1);
+            visited.remove(nextNode);
         }
     }
 }

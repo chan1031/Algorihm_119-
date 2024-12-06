@@ -51,7 +51,7 @@ public class Graph {
 
     // Graph 클래스의 addNode 메소드도 오버로드
     public void addNode(String name, double lat, double lon, int hvec) {
-        Node node = new Node(name, lat, lon, hvec);
+        Node node = new Node(name,  lat, lon, hvec);
         nodes.put(name, node);
         adjacencyMap.put(name, new HashMap<>());
     }

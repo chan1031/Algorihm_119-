@@ -1,6 +1,5 @@
     package com.example.a119_saver;
 
-
     import android.graphics.Color;
     import android.os.Bundle;
     import android.util.Log;
@@ -21,10 +20,17 @@
     import com.kakao.vectormap.label.LabelStyles;
     import com.kakao.vectormap.label.LabelTextBuilder;
     import com.kakao.vectormap.label.LabelTextStyle;
+    import com.kakao.vectormap.route.RouteLine;
+    import com.kakao.vectormap.route.RouteLineLayer;
+    import com.kakao.vectormap.route.RouteLineOptions;
+    import com.kakao.vectormap.route.RouteLineSegment;
+    import com.kakao.vectormap.route.RouteLineStyle;
+    import com.kakao.vectormap.route.RouteLineStyles;
+    import com.kakao.vectormap.route.RouteLineStylesSet;
 
-
-    import java.io.IOException;
     import java.util.ArrayList;
+    import java.util.Arrays;
+    import java.util.Collections;
     import java.util.HashSet;
     import java.util.List;
     import java.util.Set;
@@ -99,7 +105,6 @@
                 kakaoMap = map;
                 // 지역 응급실 목록 조회 시작
                 searchEmergencyList("서울특별시", "종로구");
-
             }
 
             @NonNull
@@ -125,6 +130,7 @@
                 Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         };
+
         // 1. 지역 응급실 목록 조회
         private void searchEmergencyList(String city, String district) {
             Call<EmergencyListResponse> call = api.getEmergencyList(API_KEY, city, district, 1, 10,"XML");
@@ -142,15 +148,13 @@
                                     responseBody.getBody().getItems() != null) {
                                 List<EmergencyListItem> hospitals = responseBody.getBody().getItems();
                                 pendingCoordinates = new AtomicInteger(hospitals.size());
-                                // 응답 결과 로그 출력
-                                for(EmergencyListItem hospital : hospitals) {
 
+                                for(EmergencyListItem hospital : hospitals) {
 
                                     global_hospitals.add(new Hospital(hospital.getHospitalName(),
                                             hospital.getHospitalId(),
                                             hospital.getHvec()));
 
-                                    //DetailAPI 호출
                                     searchDetailEmergency(hospital.getHospitalId());
 
                                 }
@@ -210,6 +214,7 @@
                                 }
                                 //지도에 표시
                                 addMarkerToMap(item);
+                                //경로 출력
                                 if (pendingCoordinates.decrementAndGet() == 0) {
                                     calculateAllHospitalRoutes(global_hospitals);
                                 }
@@ -294,8 +299,27 @@
 
             kakaoNavigation.calculateAllRoutes(hospitals, new KakaoNavigation.AllRoutesCallback() {
                 @Override
-                public void onSuccess(List<KakaoNavigation.RouteInfo> routes) {
-                    Log.d("TAGTAG", "Routes calculation completed");
+                public void onSuccess(List<KakaoNavigation.RouteInfo> routes, KakaoNavigation.Result bestPath) {
+                    if(bestPath != null){
+                        // 최선 경로 처리
+                        String pathString = String.join(" -> ", bestPath.path);
+                        Log.d("bestPath", "Best Path: " + pathString);
+                        Log.d("bestPath", String.format("Total Time: %d분 %d초",
+                                bestPath.totalTime / 60, bestPath.totalTime % 60));
+                    }
+
+                    // 최선 경로의 모든 vertex 가져오기
+                    List<KakaoNavigation.Vertex> bestVertices = kakaoNavigation.getBestPathVertices(bestPath);
+                    Log.d("bestPath", "Retrieved all navigation vertices for the best path");
+                    drawRouteOnMap(bestVertices);
+                    // vertex들의 위도, 경도 출력
+                    Log.d("bestPath", "Navigation Route Vertices:");
+                    for (int i = 0; i < bestVertices.size(); i++) {
+                        KakaoNavigation.Vertex vertex = bestVertices.get(i);
+                        Log.d("bestPath", String.format("Vertex %d: (lat: %f, lon: %f)",
+                                i + 1, vertex.lat, vertex.lon));
+                    }
+
                     // 모든 결과를 한 번에 출력하기 위해 StringBuilder 사용
                     StringBuilder logBuilder = new StringBuilder();
                     logBuilder.append("=== 병원별 경로 계산 결과 ===\n");
@@ -371,6 +395,44 @@
                 Log.d(TAG, "=======================================");
             } else {
                 Log.e(TAG, "경로 정보를 찾을 수 없습니다.");
+            }
+        }
+
+        private void drawRouteOnMap(List<KakaoNavigation.Vertex> vertices) {
+            if (kakaoMap == null || vertices == null || vertices.isEmpty()) {
+                Log.e("MAP", "지도 또는 경로 데이터가 없습니다.");
+                return;
+            }
+
+            try {
+                // 1. RouteLineLayer 가져오기
+                RouteLineLayer layer = kakaoMap.getRouteLineManager().getLayer();
+
+                // 2. RouteLineStylesSet 생성하기 (파란색 경로 스타일)
+                RouteLineStylesSet stylesSet = RouteLineStylesSet.from("blueStyles",
+                        RouteLineStyles.from(RouteLineStyle.from(16, Color.BLUE)));
+
+
+                // 3. Vertex 리스트를 LatLng 리스트로 변환
+                List<LatLng> routeCoords = vertices.stream()
+                        .map(vertex -> LatLng.from(vertex.lat, vertex.lon))
+                        .collect(Collectors.toList());
+
+                // 4. RouteLineSegment 생성 및 스타일 설정
+                RouteLineSegment segment = RouteLineSegment.from(routeCoords)
+                        .setStyles(stylesSet.getStyles("navigationRoute"));
+
+                // 5. RouteLineOptions 생성
+                RouteLineOptions options = RouteLineOptions.from(segment)
+                        .setStylesSet(stylesSet);
+
+                // 6. RouteLine 생성 및 추가
+                RouteLine routeLine = layer.addRouteLine(options);
+
+                Log.d("MAP", "경로를 성공적으로 그렸습니다. 포인트 수: " + vertices.size());
+
+            } catch (Exception e) {
+                Log.e("MAP", "경로 그리기 실패: " + e.getMessage(), e);
             }
         }
     }
