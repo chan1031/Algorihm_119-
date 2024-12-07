@@ -19,7 +19,7 @@
 
         <!-- 여기에 액티비티 추가 -->
         <activity
-            android:name=".MainActivity"
+            android:name=".HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

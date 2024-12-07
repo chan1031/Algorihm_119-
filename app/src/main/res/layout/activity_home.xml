@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 응급실 섹션 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="응급실"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/checkbox_er_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="전체"/>
+
+            <CheckBox
+                android:id="@+id/checkbox_er_isolation_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="격리병상"/>
+        </LinearLayout>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="#D9D9D9"
+            app:cardCornerRadius="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <!-- 왼쪽 열 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <CheckBox android:id="@+id/checkbox_er_normal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="일반"/>
+
+                    <CheckBox android:id="@+id/checkbox_er_cohort"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="코호트 격리"/>
+
+                    <CheckBox android:id="@+id/checkbox_er_negative"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="음압격리"/>
+
+                    <CheckBox android:id="@+id/checkbox_er_isolation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="일반격리"/>
+                </LinearLayout>
+
+                <!-- 오른쪽 열 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <CheckBox android:id="@+id/checkbox_er_trauma"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="외상소생실"/>
+
+                    <CheckBox android:id="@+id/checkbox_er_pediatric"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="소아"/>
+
+                    <CheckBox android:id="@+id/checkbox_er_pediatric_negative"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="소아음압격리"/>
+
+                    <CheckBox android:id="@+id/checkbox_er_pediatric_isolation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="소아일반격리"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 장비정보 섹션 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="장비정보"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <CheckBox
+            android:id="@+id/checkbox_equipment_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="전체"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="#D9D9D9"
+            app:cardCornerRadius="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <!-- 왼쪽 열 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <CheckBox android:id="@+id/checkbox_equipment_ventilator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="인공호흡기 일반"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_ventilator_pediatric"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="인공호흡기 조산아"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_temperature"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="중심체온조절유도기"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_oxygen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="고압산소치료기"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_angiography"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="혈관촬영기"/>
+                </LinearLayout>
+
+                <!-- 오른쪽 열 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <CheckBox android:id="@+id/checkbox_equipment_incubator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="인큐베이터"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_crrt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CRRT"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_ecmo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ECMO"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_ct"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CT"/>
+
+                    <CheckBox android:id="@+id/checkbox_equipment_mri"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MRI"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 골든타임 섹션 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="골든타임"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/edit_golden_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="분 단위로 입력해주세요."
+            android:inputType="number"
+            android:padding="12dp"
+            android:background="@drawable/edit_text_border"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- 경로 찾기 버튼 -->
+        <Button
+            android:id="@+id/button_find_route"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="48dp"
+            android:layout_marginBottom="24dp"
+            android:text="경로 찾기"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/rounded_button"
+            android:padding="12dp"/>
+
+    </LinearLayout>
+</ScrollView>
