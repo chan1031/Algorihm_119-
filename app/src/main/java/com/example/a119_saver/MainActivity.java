@@ -105,7 +105,6 @@
         private KakaoMapReadyCallback readyCallback = new KakaoMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull KakaoMap map) {
-                Toast.makeText(getApplicationContext(), "Map Start!", Toast.LENGTH_SHORT).show();
                 kakaoMap = map;
                 // 지역 응급실 목록 조회 시작
                 searchEmergencyList("서울특별시", "종로구");
@@ -315,7 +314,16 @@
                     // 최선 경로의 모든 vertex 가져오기
                     List<KakaoNavigation.Vertex> bestVertices = kakaoNavigation.getBestPathVertices(bestPath);
                     Log.d("bestPath", "Retrieved all navigation vertices for the best path");
-                    drawRouteOnMap(bestVertices);
+
+                    // 부분 경로일 경우 알림 표시
+                    if (bestPath.isPartialPath) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity.this,
+                                    "골든타임을 초과해서 대안 경로를 추천합니다",
+                                    Toast.LENGTH_LONG).show();
+                        });
+                    }
+                    drawRouteOnMap(bestVertices, bestPath.isPartialPath);
                     // vertex들의 위도, 경도 출력
                     Log.d("bestPath", "Navigation Route Vertices:");
                     for (int i = 0; i < bestVertices.size(); i++) {
@@ -402,31 +410,24 @@
             }
         }
 
-        private void drawRouteOnMap(List<KakaoNavigation.Vertex> vertices) {
+        private void drawRouteOnMap(List<KakaoNavigation.Vertex> vertices, boolean isPartialPath) {
             if (kakaoMap == null || vertices == null || vertices.isEmpty()) {
                 Log.e("MAP", "지도 또는 경로 데이터가 없습니다.");
                 return;
             }
 
             try {
-                // 1. RouteLineLayer 가져오기
                 RouteLineLayer layer = kakaoMap.getRouteLineManager().getLayer();
-
-                // 2. Vertex 리스트를 LatLng 리스트로 변환
                 List<LatLng> routeCoords = vertices.stream()
                         .map(vertex -> LatLng.from(vertex.lat, vertex.lon))
                         .collect(Collectors.toList());
 
-                // 3. RouteLineStyle 생성
-                RouteLineStyle style = RouteLineStyle.from(16, Color.BLUE);
+                // 경로 색상 설정
+                int routeColor = isPartialPath ? Color.RED : Color.BLUE;
+                RouteLineStyle style = RouteLineStyle.from(16, routeColor);
 
-                // 4. RouteLineSegment 생성
                 RouteLineSegment segment = RouteLineSegment.from(routeCoords, style);
-
-                // 5. RouteLineOptions 생성 및 경로 추가
                 RouteLineOptions options = RouteLineOptions.from(Arrays.asList(segment));
-
-                // 6. RouteLine 생성 및 추가
                 RouteLine routeLine = layer.addRouteLine(options);
 
                 Log.d("MAP", "경로를 성공적으로 그렸습니다. 포인트 수: " + vertices.size());

@@ -32,11 +32,13 @@ public class KakaoNavigation {
         List<String> path;
         int totalTime;
         double totalBound;
+        boolean isPartialPath;  // 추가된 플래그
 
-        public Result(List<String> path, int totalTime, double totalBound) {
+        public Result(List<String> path, int totalTime, double totalBound, boolean isPartialPath) {
             this.path = new ArrayList<>(path);
             this.totalTime = totalTime;
             this.totalBound = totalBound;
+            this.isPartialPath = isPartialPath;
         }
     }
 
@@ -413,25 +415,23 @@ public class KakaoNavigation {
         this.goldenTime = golden_time;
         this.bestResult = null;
 
+        // 첫 번째 시도: 모든 병원 방문 시도
         List<String> currentPath = new ArrayList<>();
         currentPath.add("현재 위치");
-
         Set<String> visited = new HashSet<>();
         visited.add("현재 위치");
 
-        // 첫 번째 완전한 경로를 찾기 위한 초기 실행
-        branch_and_bound_recursive(currentPath, visited, 0, 0.0, 1, true);
+        branch_and_bound_recursive(currentPath, visited, 0, 0.0, 1, true, false);  // 수정된 부분
 
-        if (bestResult != null) {
-            Log.d(TAG2, "Initial complete path found!");
-            Log.d(TAG2, String.format("Initial lower bound: %.5f", bestResult.totalBound));
-
-            // 이제 실제 branch and bound 탐색 시작
+        // 모든 병원을 방문하는 경로를 찾지 못한 경우
+        if (bestResult == null) {
+            Log.d(TAG2, "모든 병원을 방문하는 경로를 찾지 못해 부분 경로를 탐색합니다.");
+            // 방문 병원 수 제한을 없애고 재시도
             currentPath.clear();
             visited.clear();
             currentPath.add("현재 위치");
             visited.add("현재 위치");
-            branch_and_bound_recursive(currentPath, visited, 0, 0.0, 1, false);
+            branch_and_bound_recursive(currentPath, visited, 0, 0.0, 1, true, true);  // 수정된 부분
         }
 
         return bestResult;
@@ -444,9 +444,9 @@ public class KakaoNavigation {
             int currentTime,
             double currentBound,
             int branchLevel,
-            boolean isInitialSearch
+            boolean isInitialSearch,
+            boolean allowPartialPath    // 부분 경로 허용 여부
     ) {
-        // 현재 경로 정보 출력
         StringBuilder pathStr = new StringBuilder();
         for (String node : currentPath) {
             pathStr.append(node).append(" -> ");
@@ -457,10 +457,18 @@ public class KakaoNavigation {
         Log.d(TAG2, String.format("누적 bound: %.5f", currentBound));
         Log.d(TAG2, String.format("현재 분기 레벨: %d", branchLevel));
 
-        // 모든 노드를 방문한 경우
-        if (visited.size() == graph.getNodes().size()) {
+        // 현재 경로가 가능한 해인지 확인
+        // allowPartialPath가 true이면 부분 경로도 해로 인정
+        if (allowPartialPath && currentPath.size() > 1) {
             if (bestResult == null || currentBound < bestResult.totalBound) {
-                bestResult = new Result(currentPath, currentTime, currentBound);
+                bestResult = new Result(currentPath, currentTime, currentBound, true);  // true로 설정
+                Log.d(TAG2, "새로운 최적해 발견! (부분 경로)");
+                Log.d(TAG2, String.format("최적 bound: %.5f", currentBound));
+            }
+        }
+        else if (!allowPartialPath && visited.size() == graph.getNodes().size()) {
+            if (bestResult == null || currentBound < bestResult.totalBound) {
+                bestResult = new Result(currentPath, currentTime, currentBound, false);  // false로 설정
                 Log.d(TAG2, "새로운 최적해 발견!");
                 Log.d(TAG2, String.format("최적 bound: %.5f", currentBound));
             }
@@ -469,7 +477,6 @@ public class KakaoNavigation {
 
         String currentNode = currentPath.get(currentPath.size() - 1);
 
-        // 다음 방문할 노드 탐색
         for (String nextNode : graph.getNodes().keySet()) {
             if (visited.contains(nextNode)) continue;
 
@@ -487,7 +494,7 @@ public class KakaoNavigation {
             double nextBound = calculateBound(nextNode, moveTime, branchLevel);
             double nextTotalBound = currentBound + nextBound;
 
-            // 초기 탐색이 아닐 경우에만 bound 기반 가지치기 수행
+            // bound 기반 가지치기 (초기 탐색이 아닐 경우)
             if (!isInitialSearch && bestResult != null && nextTotalBound >= bestResult.totalBound) {
                 Log.d(TAG2, String.format("현재 최적 bound(%.5f)보다 큰 값(%.5f)이므로 가지치기",
                         bestResult.totalBound, nextTotalBound));
@@ -498,11 +505,11 @@ public class KakaoNavigation {
             currentPath.add(nextNode);
             visited.add(nextNode);
 
-            branch_and_bound_recursive(currentPath, visited, nextTotalTime, nextTotalBound, branchLevel + 1, isInitialSearch);
+            branch_and_bound_recursive(currentPath, visited, nextTotalTime, nextTotalBound,
+                    branchLevel + 1, isInitialSearch, allowPartialPath);
 
             currentPath.remove(currentPath.size() - 1);
             visited.remove(nextNode);
         }
     }
-
 }
