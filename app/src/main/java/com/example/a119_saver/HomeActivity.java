@@ -109,10 +109,7 @@ public class HomeActivity extends AppCompatActivity {
                 // 골든타임 입력값이 없거나 잘못된 경우 처리
             }
 
-            Intent intent = new Intent(HomeActivity.this, RouteActivity.class);
-            intent.putExtra("emergencyRoomChecks", emergencyRoomChecks);
-            intent.putExtra("equipmentChecks", equipmentChecks);
-            intent.putExtra("goldenTime", goldenTime);
+            Intent intent = new Intent(HomeActivity.this, MainActivity.class);
             startActivity(intent);
         });
     }

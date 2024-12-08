@@ -27,6 +27,13 @@
             </intent-filter>
         </activity>
 
+        <!-- MainActivity 추가 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <!-- MainActivity에 특정 Intent-filter가 필요하면 여기에 추가 -->
+        </activity>
+
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="3fe39c0eb89fcd9b14d7f17df62a10a0" />
