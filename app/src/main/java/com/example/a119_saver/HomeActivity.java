@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class HomeActivity extends AppCompatActivity {
@@ -105,12 +107,16 @@ public class HomeActivity extends AppCompatActivity {
             int goldenTime = 0;
             try {
                 goldenTime = Integer.parseInt(goldenTimeInput.getText().toString());
+
+                // Intent에 골든타임 값을 추가
+                Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+                intent.putExtra("goldenTime", goldenTime); // 키-값 쌍으로 데이터 전달
+                startActivity(intent);
+
             } catch (NumberFormatException e) {
                 // 골든타임 입력값이 없거나 잘못된 경우 처리
+                Toast.makeText(this, "올바른 시간을 입력해주세요", Toast.LENGTH_SHORT).show();
             }
-
-            Intent intent = new Intent(HomeActivity.this, MainActivity.class);
-            startActivity(intent);
         });
     }
 }

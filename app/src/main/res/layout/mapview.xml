@@ -29,32 +29,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:padding="16dp">
 
-        <!-- Latitude -->
-        <TextView
-            android:id="@+id/tvLat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Latitude: "
-            android:textSize="16sp"
-            android:textColor="#000000" />
-
-        <!-- Longitude -->
-        <TextView
-            android:id="@+id/tvLng"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Longitude: "
-            android:textSize="16sp"
-            android:textColor="#000000" />
-
-        <!-- Zoom Level -->
-        <TextView
-            android:id="@+id/tvZoomLevel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Zoom Level: "
-            android:textSize="16sp"
-            android:textColor="#000000" />
 
     </LinearLayout>
 

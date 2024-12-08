@@ -87,8 +87,10 @@
         protected void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.mapview);
+            int goldenTime = getIntent().getIntExtra("goldenTime", 0);
 
             kakaoNavigation = new KakaoNavigation();
+            kakaoNavigation.setGoldenTime(goldenTime);
             // Retrofit 초기화
             api = new Retrofit.Builder()
                     .baseUrl(BASE_URL)

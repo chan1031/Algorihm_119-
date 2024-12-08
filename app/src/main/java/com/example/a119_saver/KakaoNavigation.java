@@ -31,17 +31,52 @@ public class KakaoNavigation {
     public class Result {
         List<String> path;
         int totalTime;
+        double totalBound;
 
-        public Result(List<String> path, int totalTime) {
-            this.path = new ArrayList<>(path);  // path를 복사하도록 수정
+        public Result(List<String> path, int totalTime, double totalBound) {
+            this.path = new ArrayList<>(path);
             this.totalTime = totalTime;
+            this.totalBound = totalBound;
         }
+    }
+
+    // bound 계산을 위한 새로운 메서드
+    private double calculateBound(String nodeName, int time, int branchLevel) {
+        int bedNum = graph.getNodes().get(nodeName).getHvec();
+
+        // 시작점("현재 위치")의 경우 병상수 계산에서 제외
+        if (nodeName.equals("현재 위치")) {
+            Log.d(TAG2, "시작점의 bound 계산: 0.0");
+            return 0.0;
+        }
+
+        // 병상 수가 0 이하인 경우 0.1로 조정
+        if (bedNum <= 0) {
+            Log.d(TAG2, String.format("병상 수(%d)가 0 이하여서 0.1로 조정", bedNum));
+            bedNum = 1;  // 1/0.1 = 10으로 설정하기 위해 1로 설정
+        }
+
+        double timeFactor = 0.6 * time;
+        double bedFactor = 0.4 * (1.0/bedNum);
+        double branchFactor = Math.pow(0.1, branchLevel);
+        double bound = (timeFactor + bedFactor) * branchFactor;
+
+        Log.d(TAG2, String.format("Bound 계산 - 노드: %s", nodeName));
+        Log.d(TAG2, String.format("  시간 요소(0.6 * %d): %.2f", time, timeFactor));
+        Log.d(TAG2, String.format("  병상 요소(0.4 * 1/%d): %.2f", bedNum, bedFactor));
+        Log.d(TAG2, String.format("  분기 레벨(%d)의 가중치: %.5f", branchLevel, branchFactor));
+        Log.d(TAG2, String.format("  최종 bound 값: %.5f", bound));
+
+        return bound;
     }
 
     private Result bestResult;
     //이 변수는 사용자로부터 입력받아야 하므로 MainActivity.java에서 가져와야할듯
     private int goldenTime;
-
+    public void setGoldenTime(int goldenTime) {
+        this.goldenTime = goldenTime;
+        Log.d("KakaoNavigation_setGoldenTime", "GoldenTime set to: " + goldenTime);
+    }
     //Graph
     private Graph graph;
 
@@ -268,7 +303,7 @@ public class KakaoNavigation {
                                     Log.d(TAG, "All routes calculated. Calling callback...");
                                     printGraphState();
                                     //최선의 경로
-                                    Result result = branch_and_bound(60);  // 예시로 골든타임 30분 설정
+                                    Result result = branch_and_bound(goldenTime);
                                     if (result != null) {
                                         Log.d(TAG2, "최선의 경로:");
                                         StringBuilder pathStr = new StringBuilder();
@@ -379,22 +414,55 @@ public class KakaoNavigation {
         this.bestResult = null;
 
         List<String> currentPath = new ArrayList<>();
-        currentPath.add("현재 위치");    // 시작점
+        currentPath.add("현재 위치");
 
         Set<String> visited = new HashSet<>();
-        visited.add("현재 위치");        // 시작점 방문 체크
+        visited.add("현재 위치");
 
-        branch_and_bound_recursive(currentPath, visited, 0);
+        // 첫 번째 완전한 경로를 찾기 위한 초기 실행
+        branch_and_bound_recursive(currentPath, visited, 0, 0.0, 1, true);
+
+        if (bestResult != null) {
+            Log.d(TAG2, "Initial complete path found!");
+            Log.d(TAG2, String.format("Initial lower bound: %.5f", bestResult.totalBound));
+
+            // 이제 실제 branch and bound 탐색 시작
+            currentPath.clear();
+            visited.clear();
+            currentPath.add("현재 위치");
+            visited.add("현재 위치");
+            branch_and_bound_recursive(currentPath, visited, 0, 0.0, 1, false);
+        }
 
         return bestResult;
     }
 
     //branch and bound 적용 함수
-    private void branch_and_bound_recursive(List<String> currentPath, Set<String> visited, int currentTime) {
+    private void branch_and_bound_recursive(
+            List<String> currentPath,
+            Set<String> visited,
+            int currentTime,
+            double currentBound,
+            int branchLevel,
+            boolean isInitialSearch
+    ) {
+        // 현재 경로 정보 출력
+        StringBuilder pathStr = new StringBuilder();
+        for (String node : currentPath) {
+            pathStr.append(node).append(" -> ");
+        }
+        Log.d(TAG2, String.format("\n현재 탐색 정보:"));
+        Log.d(TAG2, String.format("경로: %s", pathStr.toString()));
+        Log.d(TAG2, String.format("누적 시간: %d분", currentTime));
+        Log.d(TAG2, String.format("누적 bound: %.5f", currentBound));
+        Log.d(TAG2, String.format("현재 분기 레벨: %d", branchLevel));
+
         // 모든 노드를 방문한 경우
         if (visited.size() == graph.getNodes().size()) {
-            if (bestResult == null || currentTime < bestResult.totalTime) {
-                bestResult = new Result(currentPath, currentTime);
+            if (bestResult == null || currentBound < bestResult.totalBound) {
+                bestResult = new Result(currentPath, currentTime, currentBound);
+                Log.d(TAG2, "새로운 최적해 발견!");
+                Log.d(TAG2, String.format("최적 bound: %.5f", currentBound));
             }
             return;
         }
@@ -405,26 +473,36 @@ public class KakaoNavigation {
         for (String nextNode : graph.getNodes().keySet()) {
             if (visited.contains(nextNode)) continue;
 
-            // 다음 노드까지의 이동시간 계산
-            int moveTime = graph.getAdjacencyMap().get(currentNode).get(nextNode);
+            Log.d(TAG2, String.format("\n다음 노드 %s 검토 중...", nextNode));
+
+            int moveTime = graph.getAdjacencyMap().get(currentNode).get(nextNode) / 60;
             int nextTotalTime = currentTime + moveTime;
 
-            // 가지치기 (Pruning)
-            if (nextTotalTime > goldenTime * 60 ||
-                    (bestResult != null && nextTotalTime >= bestResult.totalTime)) {
+            // 골든타임 체크
+            if (nextTotalTime > goldenTime) {
+                Log.d(TAG2, String.format("골든타임(%d분) 초과로 가지치기", goldenTime));
                 continue;
             }
 
-            // 경로 확장
+            double nextBound = calculateBound(nextNode, moveTime, branchLevel);
+            double nextTotalBound = currentBound + nextBound;
+
+            // 초기 탐색이 아닐 경우에만 bound 기반 가지치기 수행
+            if (!isInitialSearch && bestResult != null && nextTotalBound >= bestResult.totalBound) {
+                Log.d(TAG2, String.format("현재 최적 bound(%.5f)보다 큰 값(%.5f)이므로 가지치기",
+                        bestResult.totalBound, nextTotalBound));
+                continue;
+            }
+
+            Log.d(TAG2, "해당 경로로 탐색 진행");
             currentPath.add(nextNode);
             visited.add(nextNode);
 
-            // 재귀적으로 탐색 진행
-            branch_and_bound_recursive(currentPath, visited, nextTotalTime);
+            branch_and_bound_recursive(currentPath, visited, nextTotalTime, nextTotalBound, branchLevel + 1, isInitialSearch);
 
-            // 백트래킹
             currentPath.remove(currentPath.size() - 1);
             visited.remove(nextNode);
         }
     }
+
 }
