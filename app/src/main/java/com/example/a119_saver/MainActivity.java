@@ -45,7 +45,7 @@
     import retrofit2.Retrofit;
     import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
-    public class MainActivity extends AppCompatActivity {
+    public class MainActivity extends AppCompatActivity implements RouteFragment.RouteDataListener {
         private MapView mapView;
         private KakaoMap kakaoMap;
         private EmergencyMedicalAPI api;
@@ -287,6 +287,14 @@
             } catch (NumberFormatException e) {
                 Log.e("MAP", "좌표 변환 실패: " + item.getHospitalName(), e);
             }
+        }
+
+        @Override
+        public String getBedNum() {
+            if (!global_hospitals.isEmpty()) {
+                return global_hospitals.get(0).bed_num;  // 현재는 첫 번째 병원의 병상 수를 반환
+            }
+            return "0";
         }
 
         // EmergencyDetailItem을 받아서 경로 계산하는 메서드

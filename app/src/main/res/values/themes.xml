@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme._119_saver" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimary">@color/red</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
@@ -12,5 +12,16 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- 스플래시 화면에서 보여질 배경색 -->
+        <item name="windowSplashScreenBackground">@color/white</item>
+
+        <!-- 스플래시 화면에서 보여질 이미지 -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/app_logo</item>
+
+        <!-- 스플래시가 보여질 시간 -->
+        <item name="windowSplashScreenAnimationDuration">200</item>
     </style>
 </resources>

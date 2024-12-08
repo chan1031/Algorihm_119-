@@ -21,10 +21,6 @@
         <activity
             android:name=".HomeActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <!-- MainActivity 추가 -->
@@ -32,6 +28,17 @@
             android:name=".MainActivity"
             android:exported="true">
             <!-- MainActivity에 특정 Intent-filter가 필요하면 여기에 추가 -->
+        </activity>
+
+        <!-- Splash Screen 추가 -->
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.App.Starting">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <meta-data
