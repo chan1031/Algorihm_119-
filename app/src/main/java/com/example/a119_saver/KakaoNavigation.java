@@ -1,5 +1,7 @@
 package com.example.a119_saver;
 
+import static com.example.a119_saver.MyApplication.setBed_num;
+
 import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
@@ -33,13 +35,20 @@ public class KakaoNavigation {
         List<String> path;
         int totalTime;
         double totalBound;
-        boolean isPartialPath;  // 추가된 플래그
+        boolean isPartialPath;
+        int firstHospitalTime;    // 추가된 필드
+        int firstHospitalBedNum;  // 추가된 필드
+        String firstHospitalName;
 
         public Result(List<String> path, int totalTime, double totalBound, boolean isPartialPath) {
             this.path = new ArrayList<>(path);
             this.totalTime = totalTime;
             this.totalBound = totalBound;
             this.isPartialPath = isPartialPath;
+            this.firstHospitalTime = 0;      // 기본값 설정
+            this.firstHospitalBedNum = 0;    // 기본값 설정
+
+            this.firstHospitalName = "";
         }
     }
 
@@ -444,6 +453,21 @@ public class KakaoNavigation {
             Log.d(TAG3, "경로 유형: " + (bestResult.isPartialPath ? "부분 경로" : "전체 경로"));
             Log.d(TAG3, "방문 병원 수: " + (bestResult.path.size() - 1));  // 현재 위치 제외
             Log.d(TAG3, "===========================\n");
+
+            if (bestResult.path.size() > 1) {
+                String firstHospital = bestResult.path.get(1);
+                int moveTime = graph.getAdjacencyMap().get("현재 위치").get(firstHospital) / 60;
+                int bedNum;
+                if(graph.getNodes().get(firstHospital).getHvec() < 0){
+                    bedNum = 0;
+                }else{
+                    bedNum = graph.getNodes().get(firstHospital).getHvec();
+                }
+
+                bestResult.firstHospitalName = firstHospital;
+                bestResult.firstHospitalTime = moveTime;
+                bestResult.firstHospitalBedNum = bedNum;
+            }
         }
 
         return bestResult;

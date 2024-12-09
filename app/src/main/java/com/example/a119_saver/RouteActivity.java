@@ -1,6 +1,9 @@
 package com.example.a119_saver;
 
+import static com.example.a119_saver.MyApplication.getGoldenTime;
+
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,13 +25,13 @@ public class RouteActivity extends AppCompatActivity {
         // Intent에서 데이터 받기
         emergencyRoomChecks = getIntent().getBooleanArrayExtra("emergencyRoomChecks");
         equipmentChecks = getIntent().getBooleanArrayExtra("equipmentChecks");
-        goldenTime = getIntent().getIntExtra("goldenTime", 0);
-
+        goldenTime = getGoldenTime();
+        Log.d("ABDC", ""+goldenTime);
         initializeViews();
         setupButtons();
         
         // MainActivity의 계산된 경로 시간을 표시
-        updateRouteDisplay(30); // 예시값, 실제로는 MainActivity에서 전달받은 값 사용
+        updateRouteDisplay(goldenTime); // 예시값, 실제로는 MainActivity에서 전달받은 값 사용
     }
 
     private void initializeViews() {

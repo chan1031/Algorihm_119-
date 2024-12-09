@@ -22,7 +22,11 @@
             android:name=".HomeActivity"
             android:exported="true">
         </activity>
-
+        <activity
+            android:name=".RouteActivity"
+            android:exported="false">
+            <!-- exported를 false로 설정하면 앱 내부에서만 실행 가능 -->
+        </activity>
         <!-- MainActivity 추가 -->
         <activity
             android:name=".MainActivity"

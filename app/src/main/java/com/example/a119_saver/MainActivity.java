@@ -1,5 +1,8 @@
     package com.example.a119_saver;
 
+    import static com.example.a119_saver.MyApplication.setGoldenTime;
+
+    import android.content.Intent;
     import android.graphics.Color;
     import android.os.Bundle;
     import android.util.Log;
@@ -319,6 +322,19 @@
                 @Override
                 public void onSuccess(List<KakaoNavigation.RouteInfo> routes, KakaoNavigation.Result bestPath) {
                     if(bestPath != null){
+                        // Fragment로 데이터 전달
+                        Bundle args = new Bundle();
+                        args.putInt("time", bestPath.firstHospitalTime);
+                        args.putInt("bedNum", bestPath.firstHospitalBedNum);
+                        args.putString("hospitalName", bestPath.firstHospitalName);
+
+                        RouteFragment fragment = new RouteFragment();
+                        fragment.setArguments(args);
+
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.info_container, fragment)
+                                .commit();
                         // 최선 경로 처리
                         String pathString = String.join(" -> ", bestPath.path);
                         Log.d("bestPath", "Best Path: " + pathString);
@@ -339,6 +355,7 @@
                         });
                     }
                     drawRouteOnMap(bestVertices, bestPath.isPartialPath);
+
                     // vertex들의 위도, 경도 출력
                     Log.d("bestPath", "Navigation Route Vertices:");
                     for (int i = 0; i < bestVertices.size(); i++) {

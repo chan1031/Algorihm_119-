@@ -1,5 +1,8 @@
 package com.example.a119_saver;
 
+import static com.example.a119_saver.MyApplication.getBed_num;
+import static com.example.a119_saver.MyApplication.getGoldenTime;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -44,6 +47,15 @@ public class RouteFragment extends Fragment {
         detailButton = view.findViewById(R.id.button_detail_route);
         startButton = view.findViewById(R.id.button_start_navigation);
 
+        // Arguments에서 데이터 가져오기
+        Bundle args = getArguments();
+        if (args != null) {
+            int time = args.getInt("time", 0);
+            int bedNum = args.getInt("bedNum", 0);
+            String firstHospitalName = args.getString("hospitalName","응급실");
+            updateRouteTime(firstHospitalName,time);
+            updateHospitalInfo(firstHospitalName,bedNum);
+        }
         // 버튼 클릭 리스너 설정
         detailButton.setOnClickListener(v -> {
             // 상세 경로 버튼 클릭 처리
@@ -53,26 +65,22 @@ public class RouteFragment extends Fragment {
             // 안내 시작 버튼 클릭 처리
         });
 
-        // 병상 수 정보 업데이트
-        updateHospitalInfo();
-
         return view;
     }
 
     // 병상 수 업데이트 메서드
-    private void updateHospitalInfo() {
+    private void updateHospitalInfo(String name, int bed_num) {
         if (dataListener != null && hospitalCountText != null) {
             String bedNum = dataListener.getBedNum();
-            hospitalCountText.setText("응급실 병상수: " + bedNum + "개");
+            hospitalCountText.setText(name+ "병상수: " + bed_num + "개");
         }
     }
 
-//    // 경로 시간 업데이트 메서드
-//    public void updateRouteTime(String time) {
-//        if (routeTimeText != null) {
-//            routeTimeText.setText("응급실까지 " + time + "분");
-//        }
-//    }
+
+ public void updateRouteTime(String name, int time) {
+      if (routeTimeText != null) {
+        routeTimeText.setText(name+"까지 " + time + "분");
+    }}
 
     @Override
     public void onDetach() {

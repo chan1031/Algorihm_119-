@@ -37,7 +37,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="8dp"
-                android:text="응급실까지 5분"
                 android:textSize="24sp"
                 android:textStyle="bold"/>
 
