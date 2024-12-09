@@ -22,6 +22,7 @@ import retrofit2.http.Query;
 public class KakaoNavigation {
     private static final String TAG = "KakaoNavigation";
     private static final String TAG2 = "branchandbound";
+    private static final String TAG3 = "bestResult";
     private static final String BASE_URL = "https://apis-navi.kakaomobility.com/";
     private static final String API_KEY = "cb49ad3e6bf961d966a056458a106ea9";
     private final NaviApi naviApi;
@@ -434,6 +435,17 @@ public class KakaoNavigation {
             branch_and_bound_recursive(currentPath, visited, 0, 0.0, 1, true, true);  // 수정된 부분
         }
 
+        // 최종 결과 출력
+        if (bestResult != null) {
+            Log.d(TAG3, "\n=== 최종 선택된 경로 정보 ===");
+            Log.d(TAG3, "경로: " + String.join(" -> ", bestResult.path));
+            Log.d(TAG3, String.format("총 소요 시간: %d분", bestResult.totalTime));
+            Log.d(TAG3, String.format("총 bound 값: %.5f", bestResult.totalBound));
+            Log.d(TAG3, "경로 유형: " + (bestResult.isPartialPath ? "부분 경로" : "전체 경로"));
+            Log.d(TAG3, "방문 병원 수: " + (bestResult.path.size() - 1));  // 현재 위치 제외
+            Log.d(TAG3, "===========================\n");
+        }
+
         return bestResult;
     }
 
@@ -460,9 +472,14 @@ public class KakaoNavigation {
         // 현재 경로가 가능한 해인지 확인
         // allowPartialPath가 true이면 부분 경로도 해로 인정
         if (allowPartialPath && currentPath.size() > 1) {
-            if (bestResult == null || currentBound < bestResult.totalBound) {
-                bestResult = new Result(currentPath, currentTime, currentBound, true);  // true로 설정
+            // 현재까지의 경로가 이전 최적해보다 더 많은 병원을 방문했거나
+            // 같은 수의 병원을 방문했지만 더 좋은 bound 값을 가질 때만 갱신
+            if (bestResult == null ||
+                    currentPath.size() > bestResult.path.size() ||
+                    (currentPath.size() == bestResult.path.size() && currentBound < bestResult.totalBound)) {
+                bestResult = new Result(currentPath, currentTime, currentBound, true);
                 Log.d(TAG2, "새로운 최적해 발견! (부분 경로)");
+                Log.d(TAG2, String.format("방문 병원 수: %d", currentPath.size() - 1));
                 Log.d(TAG2, String.format("최적 bound: %.5f", currentBound));
             }
         }
