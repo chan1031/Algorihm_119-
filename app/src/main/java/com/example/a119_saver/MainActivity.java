@@ -100,6 +100,13 @@
 
             mapView = findViewById(R.id.map_view);
             mapView.start(lifeCycleCallback, readyCallback);
+
+            // RouteFragment 추가
+            RouteFragment routeFragment = new RouteFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.info_container, routeFragment)  // info_container에 Fragment 추가
+                    .commit();
         }
 
         private KakaoMapReadyCallback readyCallback = new KakaoMapReadyCallback() {
