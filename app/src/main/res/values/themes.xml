@@ -23,5 +23,6 @@
 
         <!-- 스플래시가 보여질 시간 -->
         <item name="windowSplashScreenAnimationDuration">200</item>
+        <item name="postSplashScreenTheme">@style/Theme._119_saver</item>
     </style>
 </resources>

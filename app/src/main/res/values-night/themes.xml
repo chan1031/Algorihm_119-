@@ -13,4 +13,15 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- 스플래시 화면에서 보여질 배경색 -->
+        <item name="windowSplashScreenBackground">@color/white</item>
+
+        <!-- 스플래시 화면에서 보여질 이미지 -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/app_logo</item>
+
+        <!-- 스플래시가 보여질 시간 -->
+        <item name="windowSplashScreenAnimationDuration">200</item>
+        <item name="postSplashScreenTheme">@style/Theme._119_saver</item>
+    </style>
 </resources>

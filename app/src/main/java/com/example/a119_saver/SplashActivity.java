@@ -6,11 +6,14 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Handler;
 import android.os.Looper;
+import androidx.core.splashscreen.SplashScreen;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 스플래시 스크린 설정
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
 
         // 스플래시 화면 유지 시간
@@ -19,6 +22,6 @@ public class SplashActivity extends AppCompatActivity {
             Intent intent = new Intent(SplashActivity.this, HomeActivity.class);
             startActivity(intent);
             finish(); // 스플래시 액티비티 종료
-        }, 1000); // 2초 후 전환
+        }, 1000); // 1초 후 전환
     }
 }
