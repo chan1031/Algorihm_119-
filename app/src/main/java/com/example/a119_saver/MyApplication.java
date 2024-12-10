@@ -10,7 +10,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         // 카카오맵 SDK 초기화
-        KakaoMapSdk.init(this, "a6a628594619f2c244c653feab94d732");  // 여기에 본인의 API 키를 넣으세요
+        KakaoMapSdk.init(this, "API_KEY");  // 여기에 본인의 API 키를 넣으세요
     }
 
     private static int golden_Time;
