@@ -26,7 +26,7 @@ public class KakaoNavigation {
     private static final String TAG2 = "branchandbound";
     private static final String TAG3 = "bestResult";
     private static final String BASE_URL = "https://apis-navi.kakaomobility.com/";
-    private static final String API_KEY = "cb49ad3e6bf961d966a056458a106ea9";
+    private static final String API_KEY = "API_KEY";
     private final NaviApi naviApi;
     private final double CURRENT_LAT = 37.5873;
     private final double CURRENT_LON = 126.9930;
